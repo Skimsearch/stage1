@@ -38,7 +38,7 @@ def get_output_path(book_id: int, strategy: str):
         raise ValueError(f"Estrategia desconocida: {strategy}")
     
     
-def download_book(book_id: int):
+def download_book(book_id: int, strategy: str):
     url = f"https://www.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt"
 
     response = requests.get(url, timeout=20)
@@ -53,13 +53,7 @@ def download_book(book_id: int):
     header, body_and_footer = text.split(START_MARKER, 1)
     body, footer = body_and_footer.split(END_MARKER, 1)
 
-    now = datetime.now()
-
-    output_path = (
-        Path("datalake")
-        / now.strftime("%Y%m%d")
-        / now.strftime("%H")
-    )
+    output_path = get_output_path(book_id, strategy)
 
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -77,4 +71,4 @@ def download_book(book_id: int):
 
 
 if __name__ == "__main__":
-    download_book(1342)
+    download_book(1342, "time")
