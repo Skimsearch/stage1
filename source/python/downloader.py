@@ -6,6 +6,38 @@ START_MARKER = "*** START OF THE PROJECT GUTENBERG EBOOK"
 END_MARKER = "*** END OF THE PROJECT GUTENBERG EBOOK"
 
 
+def get_output_path(book_id: int, strategy: str):
+    if strategy == "time":
+        now = datetime.now()
+
+        return (
+            Path("datalake")
+            / "time"
+            / now.strftime("%Y%m%d")
+            / now.strftime("%H")
+        )
+
+    elif strategy == "book":
+        return (
+            Path("datalake")
+            / "book"
+            / str(book_id)
+        )
+
+    elif strategy == "batch":
+        batch_start = (book_id // 1000) * 1000
+        batch_end = batch_start + 999
+
+        return (
+            Path("datalake")
+            / "batch"
+            / f"{batch_start}-{batch_end}"
+        )
+
+    else:
+        raise ValueError(f"Estrategia desconocida: {strategy}")
+    
+    
 def download_book(book_id: int):
     url = f"https://www.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt"
 
