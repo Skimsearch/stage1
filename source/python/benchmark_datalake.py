@@ -7,11 +7,11 @@ strategies = ["time", "book", "batch"]
 
 for strategy in strategies:
 
-    start = time.time.perf_counter()
+    start = time.perf_counter()
 
     download_books(books, strategy)
 
-    end = time.time.perf_counter()
+    end = time.perf_counter()
 
     total_time = end - start
 
