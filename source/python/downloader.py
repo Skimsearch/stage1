@@ -71,4 +71,4 @@ def download_book(book_id: int, strategy: str):
 
 
 if __name__ == "__main__":
-    download_book(1342, "time")
+    download_book(1342, "book")
