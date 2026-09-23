@@ -69,6 +69,10 @@ def download_book(book_id: int, strategy: str):
 
     return True
 
+def download_books(book_ids: list[int], strategy: str):
+    for book_id in book_ids:
+        download_book(book_id, strategy)
 
 if __name__ == "__main__":
-    download_book(1342, "book")
+    books = [1342, 11, 84, 98, 1661]
+    download_books(books, "time")
