@@ -74,5 +74,9 @@ def download_books(book_ids: list[int], strategy: str):
         download_book(book_id, strategy)
 
 if __name__ == "__main__":
+
     books = [1342, 11, 84, 98, 1661]
+
     download_books(books, "time")
+    download_books(books, "book")
+    download_books(books, "batch")
