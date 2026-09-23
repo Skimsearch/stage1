@@ -15,7 +15,7 @@ for strategy in strategies:
 
     total_time = end - start
 
-    print(f"{strategy}: {total_time:.2f} segundos")
+    print(f"\nEstrategia: {strategy}")
     print(f"  Tiempo total: {total_time:.2f} s")
     print(f"  Libros: {len(books)}")
     print(f"  Media por libro: {total_time / len(books):.2f} s")
