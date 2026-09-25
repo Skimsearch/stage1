@@ -58,6 +58,10 @@ def save_inverted_index(inverted_index):
 
     return output_path
 
+def search_term(inverted_index, term):
+    term = term.lower()
+    return inverted_index.get(term, [])
+
 if __name__ == "__main__":
 
     books = [1342, 11, 84, 98, 1661]
@@ -69,5 +73,7 @@ if __name__ == "__main__":
     print(f"Unique terms: {len(inverted_index)}")
     print(f"Index saved to: {output_path}")
 
-    print("\nExample:")
-    print("pride:", inverted_index.get("pride", []))
+    print("\nSearch examples:")
+    print("pride:", search_term(inverted_index, "pride"))
+    print("monster:", search_term(inverted_index, "monster"))
+    print("nonexistentword:", search_term(inverted_index, "nonexistentword"))
