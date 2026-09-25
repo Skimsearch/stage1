@@ -2,6 +2,11 @@ import requests
 from pathlib import Path
 from datetime import datetime
 
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATALAKE_PATH = PROJECT_ROOT / "datalake"
+
+
 START_MARKER = "*** START OF THE PROJECT GUTENBERG EBOOK"
 END_MARKER = "*** END OF THE PROJECT GUTENBERG EBOOK"
 
@@ -11,7 +16,7 @@ def get_output_path(book_id: int, strategy: str):
         now = datetime.now()
 
         return (
-            Path("datalake")
+            DATALAKE_PATH
             / "time"
             / now.strftime("%Y%m%d")
             / now.strftime("%H")
@@ -19,7 +24,7 @@ def get_output_path(book_id: int, strategy: str):
 
     elif strategy == "book":
         return (
-            Path("datalake")
+            DATALAKE_PATH
             / "book"
             / str(book_id)
         )
@@ -29,13 +34,14 @@ def get_output_path(book_id: int, strategy: str):
         batch_end = batch_start + 999
 
         return (
-            Path("datalake")
+            DATALAKE_PATH
             / "batch"
             / f"{batch_start}-{batch_end}"
         )
 
     else:
         raise ValueError(f"Estrategia desconocida: {strategy}")
+
     
     
 def download_book(book_id: int, strategy: str):
