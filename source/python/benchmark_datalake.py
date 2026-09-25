@@ -16,10 +16,10 @@ for strategy in strategies:
 
     total_time = end - start
 
-    print(f"\nEstrategia: {strategy}")
-    print(f"  Tiempo total: {total_time:.2f} s")
-    print(f"  Libros: {len(books)}")
-    print(f"  Media por libro: {total_time / len(books):.2f} s")
+    print(f"\nStrategy: {strategy}")
+    print(f"  Total time: {total_time:.2f} s")
+    print(f"  Books: {len(books)}")
+    print(f"  Average per book: {total_time / len(books):.2f} s")
 
 
 def find_book(book_id, strategy):
@@ -64,9 +64,9 @@ def find_book(book_id, strategy):
         return len(body_matches) > 0 and len(header_matches) > 0
 
     else:
-        raise ValueError(f"Estrategia desconocida: {strategy}")
+        raise ValueError(f"Unknown strategy: {strategy}")
     
-print("\nBENCHMARK DE BÚSQUEDA")
+print("\nLOOKUP BENCHMARK")
 
 book_id = 1342
 
@@ -81,8 +81,9 @@ for strategy in strategies:
     lookup_time = end - start
 
     print(f"\n{strategy}:")
-    print(f"Tiempo de búsqueda: {lookup_time:.6f} segundos")
-    print(f"Libro encontrado: {found}")
+    print(f"Lookup time: {lookup_time:.6f} seconds")
+    print(f"Book found: {found}")
+
 
 def storage_overhead(strategy):
 
@@ -109,5 +110,5 @@ for strategy in strategies:
     files, folders = storage_overhead(strategy)
 
     print(f"\n{strategy}:")
-    print(f"Archivos: {files}")
-    print(f"Carpetas: {folders}")
+    print(f"Files: {files}")
+    print(f"Folders: {folders}")
