@@ -83,3 +83,31 @@ for strategy in strategies:
     print(f"\n{strategy}:")
     print(f"Tiempo de búsqueda: {lookup_time:.6f} segundos")
     print(f"Libro encontrado: {found}")
+
+def storage_overhead(strategy):
+
+    root = Path("datalake") / strategy
+
+    files = 0
+    folders = 0
+
+    for path in root.rglob("*"):
+
+        if path.is_file():
+            files += 1
+
+        elif path.is_dir():
+            folders += 1
+
+    return files, folders
+
+
+print("\nSTORAGE OVERHEAD")
+
+for strategy in strategies:
+
+    files, folders = storage_overhead(strategy)
+
+    print(f"\n{strategy}:")
+    print(f"Archivos: {files}")
+    print(f"Carpetas: {folders}")
