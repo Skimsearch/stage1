@@ -143,24 +143,22 @@ for strategy in strategies:
 
 print("\nRECOVERY BEHAVIOR BENCHMARK")
 
-partial_books = [1342, 11, 84]
-
 for strategy in strategies:
-
     start = time.perf_counter()
-
+    
     missing_books = []
+    already_processed = []
 
     for book_id in books:
-
-        if book_id not in partial_books:
+        if not find_book(book_id, strategy):
             missing_books.append(book_id)
+        else:
+            already_processed.append(book_id)
 
     end = time.perf_counter()
-
     recovery_time = end - start
 
     print(f"\n{strategy}:")
     print(f"Recovery detection time: {recovery_time:.6f} seconds")
-    print(f"Books already processed: {partial_books}")
-    print(f"Books remaining: {missing_books}")
+    print(f"Books already processed: {already_processed}")
+    print(f"Books remaining to download: {missing_books}")
