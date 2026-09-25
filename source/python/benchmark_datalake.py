@@ -139,4 +139,4 @@ for strategy in strategies:
     
     print(f"\n{strategy}:")
     print(f"Incremental detection time: {incremental_time:.6f} seconds")
-    print(f"Books ready to index: {list(pending_to_index)}")
+    print(f"Books ready to index: {sorted(pending_to_index)}")
