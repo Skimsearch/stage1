@@ -8,7 +8,6 @@ DATAMART_PATH = PROJECT_ROOT / "datamart"
 
 
 def extract_metadata(header_path, book_id):
-
     text = header_path.read_text(encoding="utf-8")
 
     title_match = re.search(r"^Title:\s*(.+)$", text, re.MULTILINE)
@@ -22,12 +21,9 @@ def extract_metadata(header_path, book_id):
     return book_id, title, author, language
 
 
-def save_metadata(metadata):
-
+def setup_database(db_path):
+    """Crea la tabla si no existe y devuelve la conexión y el cursor."""
     DATAMART_PATH.mkdir(parents=True, exist_ok=True)
-
-    db_path = DATAMART_PATH / "metadata.db"
-
     connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
 
@@ -39,23 +35,17 @@ def save_metadata(metadata):
             language TEXT
         )
     """)
-
-    cursor.execute("""
-        INSERT OR REPLACE INTO books
-        (book_id, title, author, language)
-        VALUES (?, ?, ?, ?)
-    """, metadata)
-
     connection.commit()
-    connection.close()
+    return connection, cursor
 
 
 if __name__ == "__main__":
-
     books = [1342, 11, 84, 98, 1661]
+    db_path = DATAMART_PATH / "metadata.db"
+    
+    connection, cursor = setup_database(db_path)
 
     for book_id in books:
-
         header_path = (
             DATALAKE_PATH
             / "book"
@@ -65,6 +55,13 @@ if __name__ == "__main__":
 
         metadata = extract_metadata(header_path, book_id)
 
-        save_metadata(metadata)
+        cursor.execute("""
+            INSERT OR REPLACE INTO books
+            (book_id, title, author, language)
+            VALUES (?, ?, ?, ?)
+        """, metadata)
 
-        print(metadata)
+        print(f"Inserted: {metadata}")
+
+    connection.commit()
+    connection.close()
