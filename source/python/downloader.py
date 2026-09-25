@@ -70,8 +70,8 @@ def download_book(book_id: int, strategy: str):
     body_path.write_text(body.strip(), encoding="utf-8")
 
     print(f"Libro {book_id} descargado correctamente")
-    print(f"Header: {header_path}")
-    print(f"Body: {body_path}")
+    #print(f"Header: {header_path}")
+    #print(f"Body: {body_path}")
 
     return True
 
