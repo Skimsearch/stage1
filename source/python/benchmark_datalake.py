@@ -69,19 +69,24 @@ def find_book(book_id, strategy):
 print("\nLOOKUP BENCHMARK")
 
 book_id = 1342
+repetitions = 1000
 
 for strategy in strategies:
 
     start = time.perf_counter()
 
-    found = find_book(book_id, strategy)
+    for _ in range(repetitions):
+        found = find_book(book_id, strategy)
 
     end = time.perf_counter()
 
-    lookup_time = end - start
+    total_time = end - start
+    average_time = total_time / repetitions
 
     print(f"\n{strategy}:")
-    print(f"Lookup time: {lookup_time:.6f} seconds")
+    print(f"Repetitions: {repetitions}")
+    print(f"Total time: {total_time:.6f} seconds")
+    print(f"Average lookup time: {average_time:.8f} seconds")
     print(f"Book found: {found}")
 
 
