@@ -140,3 +140,27 @@ for strategy in strategies:
     print(f"\n{strategy}:")
     print(f"Incremental detection time: {incremental_time:.6f} seconds")
     print(f"Books ready to index: {sorted(pending_to_index)}")
+
+print("\nRECOVERY BEHAVIOR BENCHMARK")
+
+partial_books = [1342, 11, 84]
+
+for strategy in strategies:
+
+    start = time.perf_counter()
+
+    missing_books = []
+
+    for book_id in books:
+
+        if book_id not in partial_books:
+            missing_books.append(book_id)
+
+    end = time.perf_counter()
+
+    recovery_time = end - start
+
+    print(f"\n{strategy}:")
+    print(f"Recovery detection time: {recovery_time:.6f} seconds")
+    print(f"Books already processed: {partial_books}")
+    print(f"Books remaining: {missing_books}")
