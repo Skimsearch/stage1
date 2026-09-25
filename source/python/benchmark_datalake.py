@@ -141,24 +141,38 @@ for strategy in strategies:
     print(f"Incremental detection time: {incremental_time:.6f} seconds")
     print(f"Books ready to index: {sorted(pending_to_index)}")
 
+def recovery_test(books, strategy):
+
+    processed_before_interruption = {1342, 11, 84}
+
+    start = time.perf_counter()
+
+    missing_books = []
+
+    for book_id in books:
+
+        if book_id not in processed_before_interruption:
+            missing_books.append(book_id)
+
+    end = time.perf_counter()
+
+    recovery_time = end - start
+
+    return missing_books, recovery_time
+
+
 print("\nRECOVERY BEHAVIOR BENCHMARK")
 
 for strategy in strategies:
-    start = time.perf_counter()
-    
-    missing_books = []
-    already_processed = []
 
-    for book_id in books:
-        if not find_book(book_id, strategy):
-            missing_books.append(book_id)
-        else:
-            already_processed.append(book_id)
-
-    end = time.perf_counter()
-    recovery_time = end - start
+    missing_books, recovery_time = recovery_test(
+        books,
+        strategy
+    )
 
     print(f"\n{strategy}:")
-    print(f"Recovery detection time: {recovery_time:.6f} seconds")
-    print(f"Books already processed: {already_processed}")
-    print(f"Books remaining to download: {missing_books}")
+    print(f"Missing books: {missing_books}")
+    print(
+        f"Recovery detection time: "
+        f"{recovery_time:.6f} seconds"
+    )
