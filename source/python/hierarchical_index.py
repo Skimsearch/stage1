@@ -32,6 +32,29 @@ def save_hierarchical_index(inverted_index):
             for book_id in book_ids:
                 file.write(f"{book_id}\n")
 
+def search_hierarchical(term):
+
+    term = term.lower()
+
+    if not term:
+        return []
+
+    letter = term[0].upper()
+
+    term_path = (
+        HIERARCHICAL_PATH
+        / letter
+        / f"{term}.txt"
+    )
+
+    if not term_path.exists():
+        return []
+
+    book_ids = term_path.read_text(
+        encoding="utf-8"
+    ).splitlines()
+
+    return [int(book_id) for book_id in book_ids]
 
 if __name__ == "__main__":
 
@@ -45,3 +68,8 @@ if __name__ == "__main__":
         f"Hierarchical index saved to: "
         f"{HIERARCHICAL_PATH}"
     )
+
+    print("\nSearch examples:")
+    print("pride:", search_hierarchical("pride"))
+    print("monster:", search_hierarchical("monster"))
+    print("nonexistentword:", search_hierarchical("nonexistentword"))
