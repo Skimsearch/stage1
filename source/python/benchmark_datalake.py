@@ -147,19 +147,23 @@ def recovery_test(books, strategy):
 
     start = time.perf_counter()
 
-    missing_books = []
+    already_processed = []
 
-    for book_id in books:
+    for book_id in processed_before_interruption:
+        if find_book(book_id, strategy):
+            already_processed.append(book_id)
 
-        if book_id not in processed_before_interruption:
-            missing_books.append(book_id)
+    missing_books = [
+        book_id
+        for book_id in books
+        if book_id not in already_processed
+    ]
 
     end = time.perf_counter()
 
     recovery_time = end - start
 
     return missing_books, recovery_time
-
 
 print("\nRECOVERY BEHAVIOR BENCHMARK")
 
