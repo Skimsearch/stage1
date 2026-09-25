@@ -40,7 +40,7 @@ def get_output_path(book_id: int, strategy: str):
         )
 
     else:
-        raise ValueError(f"Estrategia desconocida: {strategy}")
+        raise ValueError(f"Unknown strategy: {strategy}")
 
     
     
@@ -53,7 +53,7 @@ def download_book(book_id: int, strategy: str):
     text = response.text
 
     if START_MARKER not in text or END_MARKER not in text:
-        print("No se encontraron los marcadores de Gutenberg")
+        print("Gutenberg markers not found")
         return False
 
     header, body_and_footer = text.split(START_MARKER, 1)
@@ -69,7 +69,7 @@ def download_book(book_id: int, strategy: str):
     header_path.write_text(header.strip(), encoding="utf-8")
     body_path.write_text(body.strip(), encoding="utf-8")
 
-    print(f"Libro {book_id} descargado correctamente")
+    print(f"Book {book_id} successfully downloaded")
     #print(f"Header: {header_path}")
     #print(f"Body: {body_path}")
 
