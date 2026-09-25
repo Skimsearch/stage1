@@ -24,31 +24,48 @@ for strategy in strategies:
 
 def find_book(book_id, strategy):
     if strategy == "book":
-        path = (
+        base_path = (
             Path("datalake/book")
             / str(book_id)
-            / f"{book_id}.body.txt"
         )
-        return path.exists()
+
+        header_path = base_path / f"{book_id}.header.txt"
+        body_path = base_path / f"{book_id}.body.txt"
+
+        return header_path.exists() and body_path.exists()
 
     elif strategy == "batch":
         batch_start = (book_id // 1000) * 1000
         batch_end = batch_start + 999
-        path = (
+
+        base_path = (
             Path("datalake/batch")
             / f"{batch_start}-{batch_end}"
-            / f"{book_id}.body.txt"
         )
-        return path.exists()
+
+        header_path = base_path / f"{book_id}.header.txt"
+        body_path = base_path / f"{book_id}.body.txt"
+
+        return header_path.exists() and body_path.exists()
 
     elif strategy == "time":
-
-        matches = list(
+        body_matches = list(
             Path("datalake/time").rglob(
                 f"{book_id}.body.txt"
             )
         )
-        return len(matches) > 0
+
+        header_matches = list(
+            Path("datalake/time").rglob(
+                f"{book_id}.header.txt"
+            )
+        )
+
+        return len(body_matches) > 0 and len(header_matches) > 0
+
+    else:
+        raise ValueError(f"Estrategia desconocida: {strategy}")
+    
 print("\nBENCHMARK DE BÚSQUEDA")
 
 book_id = 1342
