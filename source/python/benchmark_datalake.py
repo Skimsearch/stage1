@@ -117,3 +117,26 @@ for strategy in strategies:
     print(f"\n{strategy}:")
     print(f"Files: {files}")
     print(f"Folders: {folders}")
+    
+    
+def get_pending_books(books_list, strategy, indexed_books):
+    available = set(book for book in books_list if find_book(book, strategy))
+    return available - indexed_books
+
+print("\nINCREMENTAL PROCESSING BENCHMARK")
+
+mock_indexed_books = {11, 84} 
+
+for strategy in strategies:
+    
+    start = time.perf_counter()
+    
+    pending_to_index = get_pending_books(books, strategy, mock_indexed_books)
+    
+    end = time.perf_counter()
+    
+    incremental_time = end - start
+    
+    print(f"\n{strategy}:")
+    print(f"Incremental detection time: {incremental_time:.6f} seconds")
+    print(f"Books ready to index: {list(pending_to_index)}")
