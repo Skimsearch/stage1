@@ -2,6 +2,7 @@ import re
 import sqlite3
 from pathlib import Path
 
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATALAKE_PATH = PROJECT_ROOT / "datalake"
 DATAMART_PATH = PROJECT_ROOT / "datamart"
@@ -22,28 +23,43 @@ def extract_metadata(header_path, book_id):
 
 
 def setup_database(db_path):
-    """Crea la tabla si no existe y devuelve la conexión y el cursor."""
-    DATAMART_PATH.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS books (
-            book_id INTEGER PRIMARY KEY,
-            title TEXT,
-            author TEXT,
-            language TEXT
-        )
-    """)
-    connection.commit()
-    return connection, cursor
+    """Crea la tabla si no existe."""
+
+    DATAMART_PATH.mkdir(parents=True, exist_ok=True)
+
+    with sqlite3.connect(db_path) as connection:
+
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS books (
+                book_id INTEGER PRIMARY KEY,
+                title TEXT,
+                author TEXT,
+                language TEXT
+            )
+        """)
+
+
+def save_metadata(db_path, metadata):
+
+    with sqlite3.connect(db_path) as connection:
+
+        cursor = connection.cursor()
+
+        cursor.execute("""
+            INSERT OR REPLACE INTO books
+            (book_id, title, author, language)
+            VALUES (?, ?, ?, ?)
+        """, metadata)
 
 
 if __name__ == "__main__":
     books = [1342, 11, 84, 98, 1661]
     db_path = DATAMART_PATH / "metadata.db"
-    
-    connection, cursor = setup_database(db_path)
+
+    setup_database(db_path)
 
     for book_id in books:
         header_path = (
@@ -55,13 +71,6 @@ if __name__ == "__main__":
 
         metadata = extract_metadata(header_path, book_id)
 
-        cursor.execute("""
-            INSERT OR REPLACE INTO books
-            (book_id, title, author, language)
-            VALUES (?, ?, ?, ?)
-        """, metadata)
+        save_metadata(db_path, metadata)
 
         print(f"Inserted: {metadata}")
-
-    connection.commit()
-    connection.close()
