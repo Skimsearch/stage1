@@ -6,7 +6,7 @@ from tokenizer import tokenize
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATALAKE_PATH = PROJECT_ROOT / "datalake"
-INDEX_PATH = PROJECT_ROOT / "datamarts" / "inverted_index"
+INDEX_PATH = PROJECT_ROOT / "datamart" / "inverted_index"
 
 
 def build_inverted_index(book_ids):
