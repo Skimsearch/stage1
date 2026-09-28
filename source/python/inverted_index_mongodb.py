@@ -56,6 +56,26 @@ def search_mongodb(term):
 
     return document["postings"]
 
+def update_mongodb_index(inverted_index):
+
+    client, collection = connect_mongodb()
+
+    for term, book_ids in inverted_index.items():
+
+        for book_id in book_ids:
+
+            collection.update_one(
+                {"term": term},
+                {
+                    "$addToSet": {
+                        "postings": book_id
+                    }
+                },
+                upsert=True
+            )
+
+    client.close()
+
 
 if __name__ == "__main__":
 

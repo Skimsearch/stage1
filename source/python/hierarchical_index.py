@@ -56,6 +56,36 @@ def search_hierarchical(term):
 
     return [int(book_id) for book_id in book_ids]
 
+def update_hierarchical_index(inverted_index):
+
+    for term, book_ids in inverted_index.items():
+
+        letter = term[0].upper()
+
+        folder = HIERARCHICAL_PATH / letter
+        folder.mkdir(parents=True, exist_ok=True)
+
+        term_path = folder / f"{term}.txt"
+
+        existing_ids = set()
+
+        if term_path.exists():
+
+            existing_ids = {
+                int(book_id)
+                for book_id in term_path.read_text(
+                    encoding="utf-8"
+                ).splitlines()
+            }
+
+        existing_ids.update(book_ids)
+
+        with open(term_path, "w", encoding="utf-8") as file:
+
+            for book_id in sorted(existing_ids):
+
+                file.write(f"{book_id}\n")
+
 if __name__ == "__main__":
 
     books = [1342, 11, 84, 98, 1661]

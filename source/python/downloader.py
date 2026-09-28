@@ -100,7 +100,7 @@ def download_books(book_ids: list[int], strategy: str):
 
 if __name__ == "__main__":
 
-    books = [1342, 11, 84, 98, 1661]
+    books = [1342, 11, 84, 98, 1661, 2701]
 
     download_books(books, "time")
     download_books(books, "book")
