@@ -56,12 +56,12 @@ mongodb_time = time.perf_counter() - start
 print(f"MongoDB storage: {mongodb_time:.6f} seconds")
 
 
-print("\nBENCHMARK DE BÚSQUEDA")
+print("\nSEARCHBENCHMARK")
 
 
 for term in terms:
 
-    print(f"\nBúsqueda: {term}")
+    print(f"\nSearch: {term}")
 
     # Inverted index
 
@@ -129,7 +129,7 @@ end = time.perf_counter()
 
 print(
     f"\nInverted index update: "
-    f"{end - start:.6f} segundos"
+    f"{end - start:.6f} seconds"
 )
 
 
@@ -143,7 +143,7 @@ end = time.perf_counter()
 
 print(
     f"Hierarchical index update: "
-    f"{end - start:.6f} segundos"
+    f"{end - start:.6f} seconds"
 )
 
 
@@ -157,5 +157,5 @@ end = time.perf_counter()
 
 print(
     f"MongoDB index update: "
-    f"{end - start:.6f} segundos"
+    f"{end - start:.6f} seconds"
 )
