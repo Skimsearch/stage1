@@ -1,8 +1,5 @@
 import time
 
-new_book = 2701
-
-
 from inverted_index import (
     build_inverted_index,
     save_inverted_index,
@@ -17,11 +14,6 @@ from hierarchical_index import (
 
 from inverted_index_mongodb import (
     save_mongodb_index,
-    search_mongodb
-)
-
-from inverted_index_mongodb import (
-    save_mongodb_index,
     search_mongodb,
     update_mongodb_index
 )
@@ -31,46 +23,37 @@ books = [1342, 11, 84, 98, 1661]
 
 terms = ["pride", "monster", "nonexistentword"]
 
+NEW_BOOK = 2701
 
-print("BENCHMARK DE INDEXACIÓN")
+
+print("INDEXING BENCHMARK")
 
 start = time.perf_counter()
+base_index = build_inverted_index(books)
+build_time = time.perf_counter() - start
 
-inverted_index = build_inverted_index(books)
-save_inverted_index(inverted_index)
-
-end = time.perf_counter()
-
-print(
-    f"\nInverted index: "
-    f"{end - start:.6f} segundos"
-)
+print(f"\nCommon build time: {build_time:.6f} seconds")
 
 
 start = time.perf_counter()
+save_inverted_index(base_index)
+monolithic_time = time.perf_counter() - start
 
-hierarchical_index = build_inverted_index(books)
-save_hierarchical_index(hierarchical_index)
-
-end = time.perf_counter()
-
-print(
-    f"Hierarchical index: "
-    f"{end - start:.6f} segundos"
-)
+print(f"Monolithic storage: {monolithic_time:.6f} seconds")
 
 
 start = time.perf_counter()
+save_hierarchical_index(base_index)
+hierarchical_time = time.perf_counter() - start
 
-mongodb_index = build_inverted_index(books)
-save_mongodb_index(mongodb_index)
+print(f"Hierarchical storage: {hierarchical_time:.6f} seconds")
 
-end = time.perf_counter()
 
-print(
-    f"MongoDB index: "
-    f"{end - start:.6f} segundos"
-)
+start = time.perf_counter()
+save_mongodb_index(base_index)
+mongodb_time = time.perf_counter() - start
+
+print(f"MongoDB storage: {mongodb_time:.6f} seconds")
 
 
 print("\nBENCHMARK DE BÚSQUEDA")
@@ -84,8 +67,7 @@ for term in terms:
 
     start = time.perf_counter()
 
-    result = search_term(inverted_index, term)
-
+    result = search_term(base_index, term)
     end = time.perf_counter()
 
     print(
@@ -123,9 +105,8 @@ for term in terms:
 
 print("\nUPDATE PERFORMANCE BENCHMARK")
 
-new_book = 2701
 
-new_index = build_inverted_index([new_book])
+new_index = build_inverted_index([NEW_BOOK])
 
 
 # Inverted index
@@ -134,15 +115,15 @@ start = time.perf_counter()
 
 for term, book_ids in new_index.items():
 
-    if term not in inverted_index:
-        inverted_index[term] = []
+    if term not in base_index:
+        base_index[term] = []
 
     for book_id in book_ids:
 
-        if book_id not in inverted_index[term]:
-            inverted_index[term].append(book_id)
+        if book_id not in base_index[term]:
+            base_index[term].append(book_id)
 
-save_inverted_index(inverted_index)
+save_inverted_index(base_index)
 
 end = time.perf_counter()
 
