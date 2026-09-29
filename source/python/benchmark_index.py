@@ -1,4 +1,5 @@
 import time
+import shutil
 from pathlib import Path
 
 from inverted_index import (
@@ -16,7 +17,6 @@ from hierarchical_index import (
 from inverted_index_mongodb import (
     connect_mongodb,
     save_mongodb_index,
-    search_mongodb,
     update_mongodb_index
 )
 
@@ -57,6 +57,9 @@ monolithic_time = time.perf_counter() - start
 
 print(f"Monolithic storage: {monolithic_time:.6f} seconds")
 
+
+if HIERARCHICAL_PATH.exists():
+    shutil.rmtree(HIERARCHICAL_PATH)
 
 start = time.perf_counter()
 save_hierarchical_index(base_index)
@@ -160,6 +163,22 @@ hierarchical_size = folder_size(
     HIERARCHICAL_PATH
 )
 
+# MongoDB disk usage
+client, collection = connect_mongodb()
+
+stats = collection.database.command(
+    "collStats",
+    collection.name
+)
+
+mongodb_size = (
+    stats["storageSize"]
+    + stats["totalIndexSize"]
+)
+
+client.close()
+
+
 print(
     f"\nMonolithic JSON: "
     f"{json_size / 1024:.2f} KB"
@@ -168,6 +187,11 @@ print(
 print(
     f"Hierarchical index: "
     f"{hierarchical_size / 1024:.2f} KB"
+)
+
+print(
+    f"MongoDB: "
+    f"{mongodb_size / 1024:.2f} KB"
 )
 
 print("\nUPDATE PERFORMANCE BENCHMARK")
