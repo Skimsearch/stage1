@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from inverted_index import build_inverted_index
-
+from control import mark_indexed
 
 MONGO_URI = "mongodb://localhost:27017/"
 DATABASE_NAME = "stage1"
@@ -79,11 +79,14 @@ def update_mongodb_index(inverted_index):
 
 if __name__ == "__main__":
 
-    books = [1342, 11, 84, 98, 1661]
+    books = [1342, 11, 84, 98, 1661, 2701]
 
     inverted_index = build_inverted_index(books)
 
     save_mongodb_index(inverted_index)
+
+    for book_id in books:
+        mark_indexed(book_id)
 
     print("MongoDB index created")
 
