@@ -4,6 +4,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#define mkdir(path, mode) _mkdir(path)
+#endif
+
 void create_directory(const char *path) {
     mkdir(path, 0777);
 }
