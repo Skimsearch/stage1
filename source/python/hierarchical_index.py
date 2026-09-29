@@ -2,6 +2,7 @@ from pathlib import Path
 
 from inverted_index import build_inverted_index
 
+from control import mark_indexed
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -88,18 +89,16 @@ def update_hierarchical_index(inverted_index):
 
 if __name__ == "__main__":
 
-    books = [1342, 11, 84, 98, 1661]
+    books = [1342, 11, 84, 98, 1661, 2701]
 
     inverted_index = build_inverted_index(books)
 
     save_hierarchical_index(inverted_index)
 
+    for book_id in books:
+        mark_indexed(book_id)
+
     print(
         f"Hierarchical index saved to: "
         f"{HIERARCHICAL_PATH}"
     )
-
-    print("\nSearch examples:")
-    print("pride:", search_hierarchical("pride"))
-    print("monster:", search_hierarchical("monster"))
-    print("nonexistentword:", search_hierarchical("nonexistentword"))

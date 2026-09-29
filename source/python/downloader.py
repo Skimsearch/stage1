@@ -2,6 +2,9 @@ import requests
 from pathlib import Path
 from datetime import datetime
 
+from control import (
+    mark_downloaded
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATALAKE_PATH = PROJECT_ROOT / "datalake"
@@ -78,20 +81,28 @@ def save_book(book_id: int, header: str, body: str, strategy: str, when: datetim
 
 
 def download_book(book_id: int, strategy: str):
-    """Kept for convenience / backwards compatibility: fetch + save in
-    one call. Benchmarks that need to separate network from disk
-    should call fetch_book/save_book directly instead."""
+
     result = fetch_book(book_id)
+
     if result is None:
         return False
 
     header, body = result
-    save_book(book_id, header, body, strategy)
 
-    print(f"Book {book_id} successfully downloaded")
+    save_book(
+        book_id,
+        header,
+        body,
+        strategy
+    )
+
+    mark_downloaded(book_id)
+
+    print(
+        f"Book {book_id} successfully downloaded"
+    )
 
     return True
-
 
 def download_books(book_ids: list[int], strategy: str):
     for book_id in book_ids:

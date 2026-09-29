@@ -3,6 +3,7 @@ from pathlib import Path
 
 from tokenizer import tokenize
 
+from control import mark_indexed
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATALAKE_PATH = PROJECT_ROOT / "datalake"
@@ -64,11 +65,14 @@ def search_term(inverted_index, term):
 
 if __name__ == "__main__":
 
-    books = [1342, 11, 84, 98, 1661]
+    books = [1342, 11, 84, 98, 1661, 2701]
 
     inverted_index = build_inverted_index(books)
 
     output_path = save_inverted_index(inverted_index)
+
+    for book_id in books:
+        mark_indexed(book_id)
 
     print(f"Unique terms: {len(inverted_index)}")
     print(f"Index saved to: {output_path}")

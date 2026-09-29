@@ -2,5 +2,5 @@ datalake/
 *.db
 __pycache__/
 *.pyc
-datamart/inverted_index/inverted_index.json
+datamart/inverted_index
 datamart/inverted_index_hierarchical/
