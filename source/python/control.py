@@ -118,4 +118,11 @@ if __name__ == "__main__":
 
     setup_control()
 
-    print("Control files created")
+    print("Downloaded:", get_downloaded_books())
+    print("Indexed:", get_indexed_books())
+    print("Pending:", get_pending_books())
+
+    action, book_id = control_pipeline_step()
+
+    print("Action:", action)
+    print("Book:", book_id)
