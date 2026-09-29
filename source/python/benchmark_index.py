@@ -1,4 +1,5 @@
 import time
+from pathlib import Path
 
 from inverted_index import (
     build_inverted_index,
@@ -26,6 +27,20 @@ terms = ["pride", "monster", "nonexistentword"]
 
 NEW_BOOK = 2701
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+JSON_PATH = (
+    PROJECT_ROOT
+    / "datamart"
+    / "inverted_index"
+    / "inverted_index.json"
+)
+
+HIERARCHICAL_PATH = (
+    PROJECT_ROOT
+    / "datamart"
+    / "inverted_index_hierarchical"
+)
 
 print("INDEXING BENCHMARK")
 
@@ -124,6 +139,36 @@ for term in terms:
     )
 
 client.close()
+
+def folder_size(path):
+
+    total_size = 0
+
+    for file in path.rglob("*"):
+
+        if file.is_file():
+            total_size += file.stat().st_size
+
+    return total_size
+
+
+print("\nDISK USAGE BENCHMARK")
+
+json_size = JSON_PATH.stat().st_size
+
+hierarchical_size = folder_size(
+    HIERARCHICAL_PATH
+)
+
+print(
+    f"\nMonolithic JSON: "
+    f"{json_size / 1024:.2f} KB"
+)
+
+print(
+    f"Hierarchical index: "
+    f"{hierarchical_size / 1024:.2f} KB"
+)
 
 print("\nUPDATE PERFORMANCE BENCHMARK")
 
