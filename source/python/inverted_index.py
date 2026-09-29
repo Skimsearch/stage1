@@ -59,6 +59,16 @@ def save_inverted_index(inverted_index):
 
     return output_path
 
+def load_inverted_index():
+
+    output_path = INDEX_PATH / "inverted_index.json"
+
+    if not output_path.exists():
+        return {}
+
+    with open(output_path, "r", encoding="utf-8") as file:
+        return json.load(file)
+    
 def search_term(inverted_index, term):
     term = term.lower()
     return inverted_index.get(term, [])
