@@ -250,3 +250,70 @@ print(
     f"MongoDB index update: "
     f"{end - start:.6f} seconds"
 )
+
+print("\nSCALABILITY BENCHMARK")
+
+datasets = [
+    [1342],
+    [1342, 11, 84],
+    [1342, 11, 84, 98, 1661],
+    [1342, 11, 84, 98, 1661, 2701]
+]
+
+for dataset in datasets:
+
+    print(f"\nBooks: {len(dataset)}")
+
+    # Build
+    start = time.perf_counter()
+
+    index = build_inverted_index(dataset)
+
+    build_time = time.perf_counter() - start
+
+    print(
+        f"Build time: "
+        f"{build_time:.6f} seconds"
+    )
+
+
+    # Monolithic
+    start = time.perf_counter()
+
+    save_inverted_index(index)
+
+    elapsed = time.perf_counter() - start
+
+    print(
+        f"Monolithic storage: "
+        f"{elapsed:.6f} seconds"
+    )
+
+
+    # Hierarchical
+    if HIERARCHICAL_PATH.exists():
+        shutil.rmtree(HIERARCHICAL_PATH)
+
+    start = time.perf_counter()
+
+    save_hierarchical_index(index)
+
+    elapsed = time.perf_counter() - start
+
+    print(
+        f"Hierarchical storage: "
+        f"{elapsed:.6f} seconds"
+    )
+
+
+    # MongoDB
+    start = time.perf_counter()
+
+    save_mongodb_index(index)
+
+    elapsed = time.perf_counter() - start
+
+    print(
+        f"MongoDB storage: "
+        f"{elapsed:.6f} seconds"
+    )
