@@ -13,6 +13,7 @@ from hierarchical_index import (
 )
 
 from inverted_index_mongodb import (
+    connect_mongodb,
     save_mongodb_index,
     search_mongodb,
     update_mongodb_index
@@ -56,52 +57,73 @@ mongodb_time = time.perf_counter() - start
 print(f"MongoDB storage: {mongodb_time:.6f} seconds")
 
 
-print("\nSEARCHBENCHMARK")
+print("\nSEARCH BENCHMARK")
 
+repetitions = 1000
+
+# Open MongoDB connection once for the whole benchmark
+client, collection = connect_mongodb()
 
 for term in terms:
 
     print(f"\nSearch: {term}")
 
-    # Inverted index
-
+    # Monolithic index
     start = time.perf_counter()
 
-    result = search_term(base_index, term)
-    end = time.perf_counter()
+    for _ in range(repetitions):
+        result_inverted = search_term(base_index, term)
+
+    total_time = time.perf_counter() - start
 
     print(
-        f"Inverted: {end - start:.6f} s "
-        f"-> {result}"
+        f"Inverted: "
+        f"total={total_time:.6f} s, "
+        f"avg={total_time / repetitions:.8f} s "
+        f"-> {result_inverted}"
     )
 
 
     # Hierarchical index
-
     start = time.perf_counter()
 
-    result = search_hierarchical(term)
+    for _ in range(repetitions):
+        result_hierarchical = search_hierarchical(term)
 
-    end = time.perf_counter()
+    total_time = time.perf_counter() - start
 
     print(
-        f"Hierarchical: {end - start:.6f} s "
-        f"-> {result}"
+        f"Hierarchical: "
+        f"total={total_time:.6f} s, "
+        f"avg={total_time / repetitions:.8f} s "
+        f"-> {result_hierarchical}"
     )
 
 
     # MongoDB
-
     start = time.perf_counter()
 
-    result = search_mongodb(term)
+    for _ in range(repetitions):
+        document = collection.find_one({
+            "term": term.lower()
+        })
 
-    end = time.perf_counter()
+        result_mongodb = (
+            document["postings"]
+            if document is not None
+            else []
+        )
+
+    total_time = time.perf_counter() - start
 
     print(
-        f"MongoDB: {end - start:.6f} s "
-        f"-> {result}"
+        f"MongoDB: "
+        f"total={total_time:.6f} s, "
+        f"avg={total_time / repetitions:.8f} s "
+        f"-> {result_mongodb}"
     )
+
+client.close()
 
 print("\nUPDATE PERFORMANCE BENCHMARK")
 
