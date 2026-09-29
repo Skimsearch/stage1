@@ -48,6 +48,7 @@ start = time.perf_counter()
 base_index = build_inverted_index(books)
 build_time = time.perf_counter() - start
 
+
 print(f"\nCommon build time: {build_time:.6f} seconds")
 
 
@@ -271,6 +272,10 @@ for dataset in datasets:
 
     build_time = time.perf_counter() - start
 
+    print(
+        f"Unique terms: "
+        f"{len(index)}"
+    )
     print(
         f"Build time: "
         f"{build_time:.6f} seconds"
