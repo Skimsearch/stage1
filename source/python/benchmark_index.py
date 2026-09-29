@@ -1,3 +1,4 @@
+import sys
 import time
 import shutil
 from pathlib import Path
@@ -42,12 +43,39 @@ HIERARCHICAL_PATH = (
     / "inverted_index_hierarchical"
 )
 
+
+def time_search(search_fn, repetitions):
+    """Run search_fn() repetitions times and return (total_time, result).
+    Shared by all three backends so the loop only lives in one place."""
+    start = time.perf_counter()
+    result = None
+    for _ in range(repetitions):
+        result = search_fn()
+    total_time = time.perf_counter() - start
+    return total_time, result
+
+
+def folder_size(path):
+    total_size = 0
+    for file in path.rglob("*"):
+        if file.is_file():
+            total_size += file.stat().st_size
+    return total_size
+
+
+if HIERARCHICAL_PATH.exists():
+    shutil.rmtree(HIERARCHICAL_PATH)
+
+client, collection = connect_mongodb()
+collection.delete_many({})
+client.close()
+
+
 print("INDEXING BENCHMARK")
 
 start = time.perf_counter()
 base_index = build_inverted_index(books)
 build_time = time.perf_counter() - start
-
 
 print(f"\nCommon build time: {build_time:.6f} seconds")
 
@@ -58,9 +86,6 @@ monolithic_time = time.perf_counter() - start
 
 print(f"Monolithic storage: {monolithic_time:.6f} seconds")
 
-
-if HIERARCHICAL_PATH.exists():
-    shutil.rmtree(HIERARCHICAL_PATH)
 
 start = time.perf_counter()
 save_hierarchical_index(base_index)
@@ -87,14 +112,10 @@ for term in terms:
 
     print(f"\nSearch: {term}")
 
-    # Monolithic index
-    start = time.perf_counter()
-
-    for _ in range(repetitions):
-        result_inverted = search_term(base_index, term)
-
-    total_time = time.perf_counter() - start
-
+    total_time, result_inverted = time_search(
+        lambda: search_term(base_index, term),
+        repetitions
+    )
     print(
         f"Inverted: "
         f"total={total_time:.6f} s, "
@@ -102,15 +123,10 @@ for term in terms:
         f"-> {result_inverted}"
     )
 
-
-    # Hierarchical index
-    start = time.perf_counter()
-
-    for _ in range(repetitions):
-        result_hierarchical = search_hierarchical(term)
-
-    total_time = time.perf_counter() - start
-
+    total_time, result_hierarchical = time_search(
+        lambda: search_hierarchical(term),
+        repetitions
+    )
     print(
         f"Hierarchical: "
         f"total={total_time:.6f} s, "
@@ -118,23 +134,11 @@ for term in terms:
         f"-> {result_hierarchical}"
     )
 
+    def mongo_lookup():
+        document = collection.find_one({"term": term.lower()})
+        return document["postings"] if document is not None else []
 
-    # MongoDB
-    start = time.perf_counter()
-
-    for _ in range(repetitions):
-        document = collection.find_one({
-            "term": term.lower()
-        })
-
-        result_mongodb = (
-            document["postings"]
-            if document is not None
-            else []
-        )
-
-    total_time = time.perf_counter() - start
-
+    total_time, result_mongodb = time_search(mongo_lookup, repetitions)
     print(
         f"MongoDB: "
         f"total={total_time:.6f} s, "
@@ -143,17 +147,6 @@ for term in terms:
     )
 
 client.close()
-
-def folder_size(path):
-
-    total_size = 0
-
-    for file in path.rglob("*"):
-
-        if file.is_file():
-            total_size += file.stat().st_size
-
-    return total_size
 
 
 print("\nDISK USAGE BENCHMARK")
@@ -194,6 +187,19 @@ print(
     f"MongoDB: "
     f"{mongodb_size / 1024:.2f} KB"
 )
+
+
+print("\nMEMORY USAGE BENCHMARK")
+
+monolithic_memory = sum(
+    sys.getsizeof(term) + sys.getsizeof(postings) + sum(sys.getsizeof(p) for p in postings)
+    for term, postings in base_index.items()
+)
+
+print(f"Monolithic in-memory index: {monolithic_memory / 1024:.2f} KB (entire index resident)")
+print("Hierarchical: negligible resident memory (reads one term file per query)")
+print("MongoDB: negligible resident memory (server-side storage, client only holds query results)")
+
 
 print("\nUPDATE PERFORMANCE BENCHMARK")
 
