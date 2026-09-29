@@ -78,6 +78,13 @@ def mark_downloaded(book_id):
         book_id
     )
 
+def get_pending_books():
+
+    downloaded = get_downloaded_books()
+    indexed = get_indexed_books()
+
+    return downloaded - indexed
+
 
 def mark_indexed(book_id):
 
@@ -85,6 +92,26 @@ def mark_indexed(book_id):
         INDEXED_FILE,
         book_id
     )
+
+def control_pipeline_step():
+
+    pending_books = get_pending_books()
+
+    if pending_books:
+
+        book_id = min(pending_books)
+
+        print(
+            f"[CONTROL] Book {book_id} ready to be indexed"
+        )
+
+        return "index", book_id
+
+    print(
+        "[CONTROL] No books pending for indexing"
+    )
+
+    return "download", None
 
 #Temporally
 if __name__ == "__main__":
