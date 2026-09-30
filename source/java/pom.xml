@@ -37,11 +37,12 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver-sync</artifactId>
-                <version>5.11.1</version>
-            </dependency>
+        <!-- MongoDB driver, para el benchmark de inverted index sobre Mongo -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>5.9.1</version>
+        </dependency>
     </dependencies>
 
     <build>
