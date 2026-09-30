@@ -1,6 +1,7 @@
 import sys
 import time
 import shutil
+import tracemalloc
 from pathlib import Path
 
 from inverted_index import (
@@ -188,18 +189,71 @@ print(
     f"{mongodb_size / 1024:.2f} KB"
 )
 
-
 print("\nMEMORY USAGE BENCHMARK")
 
-monolithic_memory = sum(
-    sys.getsizeof(term) + sys.getsizeof(postings) + sum(sys.getsizeof(p) for p in postings)
-    for term, postings in base_index.items()
+
+# Monolithic index
+monolithic_memory = (
+    sys.getsizeof(base_index)
+    + sum(
+        sys.getsizeof(term)
+        + sys.getsizeof(postings)
+        + sum(
+            sys.getsizeof(book_id)
+            for book_id in postings
+        )
+        for term, postings in base_index.items()
+    )
 )
 
-print(f"Monolithic in-memory index: {monolithic_memory / 1024:.2f} KB (entire index resident)")
-print("Hierarchical: negligible resident memory (reads one term file per query)")
-print("MongoDB: negligible resident memory (server-side storage, client only holds query results)")
+print(
+    f"Monolithic estimated memory: "
+    f"{monolithic_memory / 1024:.2f} KB"
+)
 
+
+# Hierarchical index
+tracemalloc.start()
+
+for term in terms:
+    search_hierarchical(term)
+
+current, peak = tracemalloc.get_traced_memory()
+
+tracemalloc.stop()
+
+print(
+    f"Hierarchical Python peak memory during queries: "
+    f"{peak / 1024:.2f} KB"
+)
+
+
+# MongoDB
+client, collection = connect_mongodb()
+
+tracemalloc.start()
+
+for term in terms:
+
+    document = collection.find_one({
+        "term": term.lower()
+    })
+
+current, peak = tracemalloc.get_traced_memory()
+
+tracemalloc.stop()
+
+client.close()
+
+print(
+    f"MongoDB Python client peak memory during queries: "
+    f"{peak / 1024:.2f} KB"
+)
+
+print(
+    "Note: MongoDB server memory is managed by the external "
+    "mongod process and is not included in the Python measurement."
+)
 
 print("\nUPDATE PERFORMANCE BENCHMARK")
 

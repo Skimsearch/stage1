@@ -7,3 +7,6 @@ datamart/inverted_index_hierarchical/
 
 **/target/
 *.jar
+
+source/c/datalake
+datalake_c/
