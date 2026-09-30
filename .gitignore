@@ -13,4 +13,6 @@ datalake_c/
 source/c/crawler
 source/c/datalake
 source/c/*.exe
-datalake_c/
+
+control/downloaded_books.txt
+control/indexed_books.txt
