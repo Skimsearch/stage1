@@ -1,63 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifdef _WIN32
-#include <direct.h>
-#define mkdir(path, mode) _mkdir(path)
-#endif
 
 void create_directory(const char *path) {
+
     mkdir(path, 0777);
 }
 
 
-int copy_file(const char *source_path, const char *destination_path) {
+int save_book(
+    int book_id,
+    const char *header,
+    const char *body
+) {
 
-    FILE *source = fopen(source_path, "rb");
-
-    if (source == NULL) {
-        printf("Error opening source file: %s\n", source_path);
-        return 0;
-    }
-
-    FILE *destination = fopen(destination_path, "wb");
-
-    if (destination == NULL) {
-        printf("Error opening destination file: %s\n", destination_path);
-        fclose(source);
-        return 0;
-    }
-
-    char buffer[4096];
-    size_t bytes_read;
-
-    while ((bytes_read = fread(buffer, 1, sizeof(buffer), source)) > 0) {
-
-        fwrite(buffer, 1, bytes_read, destination);
-    }
-
-    fclose(source);
-    fclose(destination);
-
-    return 1;
-}
-
-
-void save_book_by_id(int book_id) {
-
-    char source_path[256];
     char folder_path[256];
-    char destination_path[256];
-
-    sprintf(
-        source_path,
-        "datalake/book/%d/%d.body.txt",
-        book_id,
-        book_id
-    );
+    char header_path[256];
+    char body_path[256];
 
     create_directory("datalake_c");
     create_directory("datalake_c/book");
@@ -71,40 +32,72 @@ void save_book_by_id(int book_id) {
     create_directory(folder_path);
 
     sprintf(
-        destination_path,
+        header_path,
+        "%s/%d.header.txt",
+        folder_path,
+        book_id
+    );
+
+    sprintf(
+        body_path,
         "%s/%d.body.txt",
         folder_path,
         book_id
     );
 
-    if (copy_file(source_path, destination_path)) {
+
+    FILE *header_file = fopen(
+        header_path,
+        "w"
+    );
+
+    if (header_file == NULL) {
 
         printf(
-            "Book %d copied successfully\n",
+            "Error saving header for book %d\n",
             book_id
         );
-    }
-}
 
-
-int main() {
-
-    int books[] = {
-        1342,
-        11,
-        84,
-        98,
-        1661,
-        2701
-    };
-
-    int number_of_books =
-        sizeof(books) / sizeof(books[0]);
-
-    for (int i = 0; i < number_of_books; i++) {
-
-        save_book_by_id(books[i]);
+        return 0;
     }
 
-    return 0;
+    fprintf(
+        header_file,
+        "%s",
+        header
+    );
+
+    fclose(header_file);
+
+
+    FILE *body_file = fopen(
+        body_path,
+        "w"
+    );
+
+    if (body_file == NULL) {
+
+        printf(
+            "Error saving body for book %d\n",
+            book_id
+        );
+
+        return 0;
+    }
+
+    fprintf(
+        body_file,
+        "%s",
+        body
+    );
+
+    fclose(body_file);
+
+
+    printf(
+        "Book %d saved in C datalake\n",
+        book_id
+    );
+
+    return 1;
 }

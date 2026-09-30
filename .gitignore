@@ -10,3 +10,7 @@ datamart/inverted_index_hierarchical/
 
 source/c/datalake
 datalake_c/
+source/c/crawler
+source/c/datalake
+source/c/*.exe
+datalake_c/

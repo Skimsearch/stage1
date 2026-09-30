@@ -7,6 +7,13 @@
 #define END_MARKER "*** END OF THE PROJECT GUTENBERG EBOOK"
 
 
+int save_book(
+    int book_id,
+    const char *header,
+    const char *body
+);
+
+
 typedef struct {
     char *data;
     size_t size;
@@ -223,6 +230,12 @@ int main() {
             printf(
                 "Book %d downloaded and split successfully\n",
                 book_id
+            );
+
+            save_book(
+                book_id,
+                header,
+                body
             );
 
             printf(
