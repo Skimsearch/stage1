@@ -10,7 +10,8 @@
 int save_book(
     int book_id,
     const char *header,
-    const char *body
+    const char *body,
+    const char *strategy
 );
 
 
@@ -235,8 +236,24 @@ int main() {
             save_book(
                 book_id,
                 header,
-                body
+                body,
+                "time"
             );
+
+            save_book(
+                book_id,
+                header,
+                body,
+                "book"
+            );
+
+            save_book(
+                book_id,
+                header,
+                body,
+                "batch"
+            );
+
 
             printf(
                 "Header size: %zu bytes\n",
