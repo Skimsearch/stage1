@@ -2,6 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "java",
+      "name": "DatalakeBenchmark",
+      "request": "launch",
+      "mainClass": "ulog.DatalakeBenchmark",
+      "projectName": "stage1-benchmarks"
+    },
+    {
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
