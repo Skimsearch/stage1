@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -14,6 +13,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+import static com.mongodb.client.model.Filters.eq;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -26,15 +32,21 @@ public class InvertedIndexBenchmark {
     private String jsonPath;
     private String hierDir;
     private Map<String, List<Integer>> memoryJsonIndex;
-    private List<String> queryWords;
+    private MongoClient mongoClient;
+    private MongoCollection<Document> mongoCollection;
+
+    @Param({
+        "pride",
+        "monster",
+        "nonexistentword"
+    })
+    public String queryWord;
 
     @Setup(Level.Trial)
     public void setup() throws IOException {
-        queryWords = Arrays.asList("abandon", "abandoned", "abound", "about", "absence");
-
-        Path pJson = Paths.get("../../datamarts/inverted_index/inverted_index.json");
+        Path pJson = Paths.get("../../datamart/inverted_index/inverted_index.json");
         if (!Files.exists(pJson)) {
-            pJson = Paths.get("datamarts/inverted_index/inverted_index.json");
+            pJson = Paths.get("datamart/inverted_index/inverted_index.json");
         }
         jsonPath = pJson.toAbsolutePath().toString();
 
@@ -49,41 +61,92 @@ public class InvertedIndexBenchmark {
         try (BufferedReader reader = new BufferedReader(new FileReader(jsonPath))) {
             memoryJsonIndex = gson.fromJson(reader, type);
         }
+        mongoClient = MongoClients.create(
+        "mongodb://localhost:27017/"
+    );
+
+    mongoCollection = mongoClient
+        .getDatabase("stage1")
+        .getCollection("inverted_index");
     }
 
 
     @Benchmark
     public List<Integer> queryMonolithicJson() {
-        List<Integer> allPostings = new ArrayList<>();
-        for (String word : queryWords) {
-            List<Integer> postings = memoryJsonIndex.get(word);
-            if (postings != null) {
-                allPostings.addAll(postings);
-            }
+
+        List<Integer> postings =
+            memoryJsonIndex.get(queryWord);
+
+        if (postings == null) {
+            return Collections.emptyList();
         }
-        return allPostings;
+
+        return postings;
     }
 
-
     @Benchmark
-    public List<Integer> queryHierarchicalTxt() throws IOException {
-        List<Integer> allPostings = new ArrayList<>();
-        for (String word : queryWords) {
-            String firstLetter = word.substring(0, 1).toUpperCase();
-            Path termFile = Paths.get(hierDir, firstLetter, word + ".txt");
-            if (Files.exists(termFile)) {
-                List<String> lines = Files.readAllLines(termFile);
-                for (String line : lines) {
-                    for (String token : line.trim().split("\\s+")) {
-                        if (!token.isEmpty()) {
-                            try {
-                                allPostings.add(Integer.parseInt(token));
-                            } catch (NumberFormatException ignored) {}
-                        }
-                    }
-                }
+    public List<Integer> queryHierarchicalTxt()
+            throws IOException {
+
+        String firstLetter =
+            queryWord.substring(0, 1).toUpperCase();
+
+        Path termFile = Paths.get(
+            hierDir,
+            firstLetter,
+            queryWord + ".txt"
+        );
+
+        if (!Files.exists(termFile)) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> postings = new ArrayList<>();
+
+        List<String> lines =
+            Files.readAllLines(termFile);
+
+        for (String line : lines) {
+
+            if (!line.trim().isEmpty()) {
+                postings.add(
+                    Integer.parseInt(line.trim())
+                );
             }
         }
-        return allPostings;
+
+        return postings;
+    }
+
+    @Benchmark
+    public List<Integer> queryMongoDB() {
+
+        Document document = mongoCollection
+            .find(eq("term", queryWord))
+            .first();
+
+        if (document == null) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> postings =
+            document.getList(
+                "postings",
+                Integer.class
+            );
+
+        if (postings == null) {
+            return Collections.emptyList();
+        }
+
+        return postings;
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
     }
 }
