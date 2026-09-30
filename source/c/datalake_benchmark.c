@@ -18,9 +18,6 @@ int books[] = {
 int number_of_books = 6;
 
 
-/* -----------------------------
-   LOOKUP
------------------------------ */
 
 int find_book_book_strategy(int book_id) {
 
@@ -153,9 +150,6 @@ int find_book_time_strategy(int book_id) {
 }
 
 
-/* -----------------------------
-   LOOKUP BENCHMARK
------------------------------ */
 
 void benchmark_lookup() {
 
@@ -216,9 +210,6 @@ void benchmark_lookup() {
 }
 
 
-/* -----------------------------
-   STORAGE
------------------------------ */
 
 long folder_size(const char *path) {
 
