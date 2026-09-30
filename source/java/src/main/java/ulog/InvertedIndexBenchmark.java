@@ -14,6 +14,9 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -34,6 +37,13 @@ public class InvertedIndexBenchmark {
     private Map<String, List<Integer>> memoryJsonIndex;
     private MongoClient mongoClient;
     private MongoCollection<Document> mongoCollection;
+    private static final List<Integer> BOOKS = Arrays.asList(
+        1342,
+        11,
+        84,
+        98,
+        1661
+    );
 
     @Param({
         "pride",
@@ -42,6 +52,67 @@ public class InvertedIndexBenchmark {
     })
     public String queryWord;
 
+    private List<String> tokenize(String text) {
+
+        List<String> tokens = new ArrayList<>();
+
+        Matcher matcher = Pattern
+            .compile("\\b[a-zA-Z]+\\b")
+            .matcher(text.toLowerCase(Locale.ROOT));
+
+        while (matcher.find()) {
+            tokens.add(matcher.group());
+        }
+
+        return tokens;
+    }
+
+    private Map<String, List<Integer>> buildInvertedIndex(List<Integer> bookIds) throws IOException {
+        Map<String, List<Integer>> index =
+            new HashMap<>();
+
+        for (int bookId : bookIds) {
+
+            Path bodyPath = Paths.get(
+                "../../datalake/book/"
+                + bookId
+                + "/"
+                + bookId
+                + ".body.txt"
+            );
+
+            if (!Files.exists(bodyPath)) {
+                bodyPath = Paths.get(
+                    "datalake/book/"
+                    + bookId
+                    + "/"
+                    + bookId
+                    + ".body.txt"
+                );
+            }
+
+            if (!Files.exists(bodyPath)) {
+                continue;
+            }
+
+            String text = Files.readString(bodyPath);
+
+            Set<String> uniqueTokens =
+                new HashSet<>(tokenize(text));
+
+            for (String token : uniqueTokens) {
+
+                index
+                    .computeIfAbsent(
+                        token,
+                        key -> new ArrayList<>()
+                    )
+                    .add(bookId);
+            }
+        }
+
+        return index;
+    }
     @Setup(Level.Trial)
     public void setup() throws IOException {
         Path pJson = Paths.get("../../datamart/inverted_index/inverted_index.json");
@@ -140,6 +211,13 @@ public class InvertedIndexBenchmark {
         }
 
         return postings;
+    }
+
+    @Benchmark
+    public Map<String, List<Integer>> buildIndexBenchmark()
+            throws IOException {
+
+        return buildInvertedIndex(BOOKS);
     }
 
     @TearDown(Level.Trial)
