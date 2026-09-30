@@ -357,13 +357,141 @@ void benchmark_incremental_processing() {
     );
 }
 
+int check_book_complete_book_strategy(int book_id) {
+
+    char header_path[256];
+    char body_path[256];
+
+    sprintf(
+        header_path,
+        "datalake_c/book/%d/%d.header.txt",
+        book_id,
+        book_id
+    );
+
+    sprintf(
+        body_path,
+        "datalake_c/book/%d/%d.body.txt",
+        book_id,
+        book_id
+    );
+
+    FILE *header = fopen(header_path, "r");
+    FILE *body = fopen(body_path, "r");
+
+    int header_exists = header != NULL;
+    int body_exists = body != NULL;
+
+    if (header != NULL) {
+        fclose(header);
+    }
+
+    if (body != NULL) {
+        fclose(body);
+    }
+
+    if (header_exists && body_exists) {
+        return 2;   // complete
+    }
+
+    if (header_exists || body_exists) {
+        return 1;   // incomplete
+    }
+
+    return 0;       // missing
+}
+
+
+void benchmark_recovery_behavior() {
+
+    printf("\nRECOVERY BEHAVIOR BENCHMARK\n");
+
+    int book_id = 1342;
+
+    char body_path[256];
+    char backup_path[256];
+
+    sprintf(
+        body_path,
+        "datalake_c/book/%d/%d.body.txt",
+        book_id,
+        book_id
+    );
+
+    sprintf(
+        backup_path,
+        "datalake_c/book/%d/%d.body.txt.bak",
+        book_id,
+        book_id
+    );
+
+    rename(
+        body_path,
+        backup_path
+    );
+
+    clock_t start = clock();
+
+    int state =
+        check_book_complete_book_strategy(
+            book_id
+        );
+
+    double elapsed =
+        (double)(clock() - start)
+        / CLOCKS_PER_SEC;
+
+
+    if (state == 2) {
+
+        printf(
+            "Book %d state: complete\n",
+            book_id
+        );
+    }
+
+    else if (state == 1) {
+
+        printf(
+            "Book %d state: incomplete\n",
+            book_id
+        );
+    }
+
+    else {
+
+        printf(
+            "Book %d state: missing\n",
+            book_id
+        );
+    }
+
+    printf(
+        "Recovery detection time: %.6f seconds\n",
+        elapsed
+    );
+
+
+    rename(
+        backup_path,
+        body_path
+    );
+
+    printf(
+        "Book %d restored\n",
+        book_id
+    );
+}
+
 int main() {
 
     benchmark_lookup();
 
     benchmark_storage();
-    
+
     benchmark_incremental_processing();
+
+    benchmark_recovery_behavior();
 
     return 0;
 }
