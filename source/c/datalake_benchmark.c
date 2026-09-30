@@ -483,6 +483,49 @@ void benchmark_recovery_behavior() {
     );
 }
 
+void benchmark_download_write_throughput() {
+
+    printf("\nDOWNLOAD / WRITE THROUGHPUT BENCHMARK\n");
+
+    struct timespec start;
+    struct timespec end;
+
+    clock_gettime(
+        CLOCK_MONOTONIC,
+        &start
+    );
+
+    int result =
+        system("./source/c/crawler > /dev/null");
+
+    clock_gettime(
+        CLOCK_MONOTONIC,
+        &end
+    );
+
+    if (result != 0) {
+
+        printf("Error running crawler\n");
+        return;
+    }
+
+    double elapsed =
+        (end.tv_sec - start.tv_sec)
+        +
+        (end.tv_nsec - start.tv_nsec)
+        / 1000000000.0;
+
+    printf(
+        "Total crawler time: %.6f seconds\n",
+        elapsed
+    );
+
+    printf(
+        "Average per book: %.6f seconds\n",
+        elapsed / number_of_books
+    );
+}
+
 int main() {
 
     benchmark_lookup();
@@ -492,6 +535,8 @@ int main() {
     benchmark_incremental_processing();
 
     benchmark_recovery_behavior();
+
+    benchmark_download_write_throughput();
 
     return 0;
 }
