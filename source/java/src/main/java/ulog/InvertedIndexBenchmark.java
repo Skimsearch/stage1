@@ -136,10 +136,8 @@ public class InvertedIndexBenchmark {
         "mongodb://localhost:27017/"
     );
 
-    mongoCollection = mongoClient
-        .getDatabase("stage1")
-        .getCollection("inverted_index");
     }
+
 
 
     @Benchmark

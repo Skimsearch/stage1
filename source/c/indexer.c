@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "indexer.h"
 
 #define TABLE_SIZE 20011
 #define MAX_BOOKS_PER_TERM 20
@@ -56,6 +57,16 @@ TermNode *find_term(const char *term) {
     return NULL;
 }
 
+int query_term_count(const char *term) {
+
+    TermNode *node = find_term(term);
+
+    if (node == NULL) {
+        return 0;
+    }
+
+    return node->book_count;
+}
 
 void add_term(const char *term, int book_id) {
 
@@ -93,6 +104,25 @@ void add_term(const char *term, int book_id) {
     }
 }
 
+void reset_index(void) {
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+
+        TermNode *current = hash_table[i];
+
+        while (current != NULL) {
+
+            TermNode *next = current->next;
+
+            free(current->term);
+            free(current);
+
+            current = next;
+        }
+
+        hash_table[i] = NULL;
+    }
+}
 
 int is_letter(char c) {
 
@@ -189,10 +219,6 @@ void index_book(int book_id) {
 
     fclose(file);
 
-    printf(
-        "Book %d indexed\n",
-        book_id
-    );
 }
 
 
@@ -272,9 +298,6 @@ void save_index() {
 
     fclose(file);
 
-    printf(
-        "Index saved to datamart_c/inverted_index.json\n"
-    );
 }
 
 
@@ -313,46 +336,3 @@ void search_term(const char *term) {
 }
 
 
-int main() {
-
-    int books[] = {
-        1342,
-        11,
-        84,
-        98,
-        1661
-    };
-
-    int number_of_books =
-        sizeof(books) / sizeof(books[0]);
-
-
-    printf("BUILDING C INVERTED INDEX\n\n");
-
-
-    for (
-        int i = 0;
-        i < number_of_books;
-        i++
-    ) {
-
-        index_book(
-            books[i]
-        );
-    }
-
-
-    save_index();
-
-
-    printf("\nSEARCH EXAMPLES\n");
-
-    search_term("pride");
-
-    search_term("monster");
-
-    search_term("nonexistentword");
-
-
-    return 0;
-}
