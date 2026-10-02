@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
+#include <direct.h>
 #include "indexer.h"
 
 #define TABLE_SIZE 20011
@@ -124,6 +124,25 @@ void reset_index(void) {
     }
 }
 
+int get_unique_term_count(void) {
+
+    int count = 0;
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+
+        TermNode *current = hash_table[i];
+
+        while (current != NULL) {
+
+            count++;
+
+            current = current->next;
+        }
+    }
+
+    return count;
+}
+
 int is_letter(char c) {
 
     return (
@@ -151,7 +170,7 @@ void index_book(int book_id) {
 
     sprintf(
         path,
-        "datalake_c/book/%d/%d.body.txt",
+        "datalake/book/%d/%d.body.txt",
         book_id,
         book_id
     );
@@ -224,11 +243,7 @@ void index_book(int book_id) {
 
 void save_index() {
 
-    mkdir(
-        "datamart_c",
-        0777
-    );
-
+    _mkdir("datamart_c");
     FILE *file = fopen(
         "datamart_c/inverted_index.json",
         "w"
