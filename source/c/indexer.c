@@ -148,6 +148,30 @@ int get_unique_term_count(void) {
     return count;
 }
 
+void for_each_term(
+    term_callback callback,
+    void *context
+) {
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+
+        TermNode *current =
+            hash_table[i];
+
+        while (current != NULL) {
+
+            callback(
+                current->term,
+                current->book_ids,
+                current->book_count,
+                context
+            );
+
+            current =
+                current->next;
+        }
+    }
+}
 
 int is_letter(char c) {
 

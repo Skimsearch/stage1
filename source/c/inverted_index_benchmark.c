@@ -6,6 +6,7 @@
 #include <bson/bson.h>
 
 #include "indexer.h"
+#include "mongodb_index.h"
 
 
 #define QUERY_REPETITIONS 1000
@@ -25,10 +26,6 @@ double get_time_seconds(void) {
 }
 
 
-/* =========================================
-   BUILD INDEX IN MEMORY
-   ========================================= */
-
 void build_books(
     int books[],
     int number_of_books
@@ -47,9 +44,6 @@ void build_books(
 }
 
 
-/* =========================================
-   MONOLITHIC BUILD
-   ========================================= */
 
 void benchmark_monolithic_build(
     int books[],
@@ -90,10 +84,6 @@ void benchmark_monolithic_build(
 }
 
 
-/* =========================================
-   HIERARCHICAL BUILD
-   ========================================= */
-
 void benchmark_hierarchical_build(
     int books[],
     int number_of_books
@@ -133,24 +123,31 @@ void benchmark_hierarchical_build(
 }
 
 
-/* =========================================
-   MONGODB BUILD
-   ========================================= */
-
-void benchmark_mongodb_build(void) {
+void benchmark_mongodb_build(
+    int books[],
+    int number_of_books
+) {
 
     printf(
         "\nMONGODB BUILD BENCHMARK\n"
     );
 
+
+    reset_index();
+
+
     double start =
         get_time_seconds();
 
 
+    build_books(
+        books,
+        number_of_books
+    );
+
+
     int result =
-        system(
-            "./source/c/mongodb_index > /dev/null"
-        );
+        save_mongodb_index();
 
 
     double end =
@@ -160,11 +157,17 @@ void benchmark_mongodb_build(void) {
     if (result != 0) {
 
         printf(
-            "Error running MongoDB index\n"
+            "Error saving MongoDB index\n"
         );
 
         return;
     }
+
+
+    printf(
+        "Unique terms: %d\n",
+        get_unique_term_count()
+    );
 
 
     printf(
@@ -173,10 +176,6 @@ void benchmark_mongodb_build(void) {
     );
 }
 
-
-/* =========================================
-   MONOLITHIC QUERY
-   ========================================= */
 
 void benchmark_monolithic_queries(void) {
 
@@ -252,10 +251,6 @@ void benchmark_monolithic_queries(void) {
 }
 
 
-/* =========================================
-   HIERARCHICAL QUERY
-   ========================================= */
-
 void benchmark_hierarchical_queries(void) {
 
     printf(
@@ -330,10 +325,6 @@ void benchmark_hierarchical_queries(void) {
 }
 
 
-/* =========================================
-   MONGODB QUERY
-   ========================================= */
-
 int query_mongodb_count(
     mongoc_collection_t *collection,
     const char *term
@@ -384,7 +375,7 @@ int query_mongodb_count(
             bson_iter_init_find(
                 &iterator,
                 document,
-                "book_ids"
+                "postings"
             )
             &&
             BSON_ITER_HOLDS_ARRAY(
@@ -526,10 +517,6 @@ void benchmark_mongodb_queries(void) {
 }
 
 
-/* =========================================
-   MAIN
-   ========================================= */
-
 int main(void) {
 
     int books[] = {
@@ -552,9 +539,6 @@ int main(void) {
     );
 
 
-    /*
-     * MONOLITHIC
-     */
 
     benchmark_monolithic_build(
         books,
@@ -564,10 +548,6 @@ int main(void) {
     benchmark_monolithic_queries();
 
 
-    /*
-     * HIERARCHICAL
-     */
-
     benchmark_hierarchical_build(
         books,
         number_of_books
@@ -575,16 +555,14 @@ int main(void) {
 
     benchmark_hierarchical_queries();
 
-
-    /*
-     * MONGODB
-     */
-
     mongoc_init();
 
 
-    benchmark_mongodb_build();
-
+    benchmark_mongodb_build(
+        books,
+        number_of_books
+    );
+    
     benchmark_mongodb_queries();
 
 
