@@ -57,6 +57,7 @@ TermNode *find_term(const char *term) {
     return NULL;
 }
 
+
 int query_term_count(const char *term) {
 
     TermNode *node = find_term(term);
@@ -67,6 +68,7 @@ int query_term_count(const char *term) {
 
     return node->book_count;
 }
+
 
 void add_term(const char *term, int book_id) {
 
@@ -104,6 +106,7 @@ void add_term(const char *term, int book_id) {
     }
 }
 
+
 void reset_index(void) {
 
     for (int i = 0; i < TABLE_SIZE; i++) {
@@ -124,6 +127,7 @@ void reset_index(void) {
     }
 }
 
+
 int get_unique_term_count(void) {
 
     int count = 0;
@@ -143,12 +147,27 @@ int get_unique_term_count(void) {
     return count;
 }
 
+
 int is_letter(char c) {
 
     return (
         (c >= 'a' && c <= 'z')
         ||
         (c >= 'A' && c <= 'Z')
+    );
+}
+
+
+int is_word_char(char c) {
+
+    return (
+        (c >= 'a' && c <= 'z')
+        ||
+        (c >= 'A' && c <= 'Z')
+        ||
+        (c >= '0' && c <= '9')
+        ||
+        c == '_'
     );
 }
 
@@ -191,26 +210,39 @@ void index_book(int book_id) {
     char token[MAX_TOKEN_SIZE];
 
     int token_length = 0;
+    int valid_token = 1;
 
     int c;
 
 
     while ((c = fgetc(file)) != EOF) {
 
-        if (is_letter((char)c)) {
+        if (is_word_char((char)c)) {
 
-            if (token_length < MAX_TOKEN_SIZE - 1) {
+            if (is_letter((char)c)) {
 
-                token[token_length] =
-                    to_lowercase((char)c);
+                if (token_length < MAX_TOKEN_SIZE - 1) {
 
-                token_length++;
+                    token[token_length] =
+                        to_lowercase((char)c);
+
+                    token_length++;
+                }
+            }
+
+            else {
+
+                /*
+                 * A digit or underscore inside a word means
+                 * it does not match \b[a-zA-Z]+\b.
+                 */
+                valid_token = 0;
             }
         }
 
         else {
 
-            if (token_length > 0) {
+            if (token_length > 0 && valid_token) {
 
                 token[token_length] = '\0';
 
@@ -218,14 +250,15 @@ void index_book(int book_id) {
                     token,
                     book_id
                 );
-
-                token_length = 0;
             }
+
+            token_length = 0;
+            valid_token = 1;
         }
     }
 
 
-    if (token_length > 0) {
+    if (token_length > 0 && valid_token) {
 
         token[token_length] = '\0';
 
@@ -237,13 +270,13 @@ void index_book(int book_id) {
 
 
     fclose(file);
-
 }
 
 
-void save_index() {
+void save_index(void) {
 
     _mkdir("datamart_c");
+
     FILE *file = fopen(
         "datamart_c/inverted_index.json",
         "w"
@@ -312,7 +345,6 @@ void save_index() {
     fprintf(file, "\n}\n");
 
     fclose(file);
-
 }
 
 
@@ -349,5 +381,3 @@ void search_term(const char *term) {
 
     printf("]\n");
 }
-
-
