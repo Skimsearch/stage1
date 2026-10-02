@@ -122,11 +122,67 @@ int save_mongodb_index(void) {
             "inverted_index"
         );
 
+    bson_error_t error;
+
+    mongoc_collection_drop_index(
+        collection,
+        "term_1",
+        &error
+    );
+    
+    bson_t *keys =
+        BCON_NEW(
+            "term",
+            BCON_INT32(1)
+        );
+
+    mongoc_index_model_t *index_model =
+        mongoc_index_model_new(
+            keys,
+            NULL
+        );
+
+    if (
+        !mongoc_collection_create_indexes_with_opts(
+            collection,
+            &index_model,
+            1,
+            NULL,
+            NULL,
+            &error
+        )
+    ) {
+
+        printf(
+            "Error creating MongoDB term index: %s\n",
+            error.message
+        );
+
+        bson_destroy(keys);
+
+        mongoc_index_model_destroy(
+            index_model
+        );
+
+        mongoc_collection_destroy(
+            collection
+        );
+
+        mongoc_client_destroy(
+            client
+        );
+
+        return -1;
+    }
+
+    bson_destroy(keys);
+
+    mongoc_index_model_destroy(
+        index_model
+    );
 
     bson_t empty =
         BSON_INITIALIZER;
-
-    bson_error_t error;
 
 
     if (
