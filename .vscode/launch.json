@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "RunInvertedIndexBenchmark",
+      "request": "launch",
+      "mainClass": "ulog.RunInvertedIndexBenchmark",
+      "projectName": "stage1-benchmarks"
+    },
+    {
+      "type": "java",
       "name": "IndexResourceBenchmark",
       "request": "launch",
       "mainClass": "ulog.IndexResourceBenchmark",
