@@ -1,4 +1,5 @@
 // If Maven not installed
+// run chcp 65001 in the terminal before excuting in case Windows Powershell misread symbols
 package ulog;
 
 import org.openjdk.jmh.runner.Runner;

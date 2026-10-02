@@ -16,4 +16,3 @@ source/c/*.exe
 
 control/downloaded_books.txt
 control/indexed_books.txt
-resultado.txt
