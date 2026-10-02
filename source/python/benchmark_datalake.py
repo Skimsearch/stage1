@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from downloader import fetch_book, save_book, get_output_path, DATALAKE_PATH
 
-BOOKS = [1342, 11, 84, 98, 1661]
+BOOKS = [1342, 11, 84, 98, 1661, 2701]
 STRATEGIES = ["time", "book", "batch"]
 
 DATALAKE_ROOT = DATALAKE_PATH
