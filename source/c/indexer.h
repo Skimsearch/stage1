@@ -11,4 +11,5 @@ void reset_index(void);
 int get_unique_term_count(void);
 void save_hierarchical_index(void);
 
+int query_hierarchical_count(const char *term);
 #endif

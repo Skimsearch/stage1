@@ -4,9 +4,7 @@
 #include "indexer.h"
 
 
-void search_hierarchical(
-    const char *term
-) {
+int query_hierarchical_count(const char *term) {
 
     char letter =
         (char)toupper(
@@ -22,25 +20,14 @@ void search_hierarchical(
         term
     );
 
-    FILE *file =
-        fopen(
-            path,
-            "r"
-        );
-
-    printf(
-        "%s: [",
-        term
-    );
+    FILE *file = fopen(path, "r");
 
     if (file == NULL) {
-
-        printf("]\n");
-        return;
+        return 0;
     }
 
     int book_id;
-    int first = 1;
+    int count = 0;
 
     while (
         fscanf(
@@ -49,79 +36,10 @@ void search_hierarchical(
             &book_id
         ) == 1
     ) {
-
-        if (!first) {
-            printf(", ");
-        }
-
-        printf(
-            "%d",
-            book_id
-        );
-
-        first = 0;
+        count++;
     }
 
     fclose(file);
 
-    printf("]\n");
-}
-
-
-int main(void) {
-
-    int books[] = {
-        1342,
-        11,
-        84,
-        98,
-        1661
-    };
-
-    int number_of_books =
-        sizeof(books)
-        /
-        sizeof(books[0]);
-
-
-    printf(
-        "BUILDING C HIERARCHICAL INDEX\n\n"
-    );
-
-
-    for (
-        int i = 0;
-        i < number_of_books;
-        i++
-    ) {
-
-        index_book(
-            books[i]
-        );
-    }
-
-
-    save_hierarchical_index();
-
-
-    printf(
-        "\nSEARCH EXAMPLES\n"
-    );
-
-    search_hierarchical(
-        "pride"
-    );
-
-    search_hierarchical(
-        "monster"
-    );
-
-    search_hierarchical(
-        "nonexistentword"
-    );
-
-
-    reset_index();
-
-    return 0;
+    return count;
 }
