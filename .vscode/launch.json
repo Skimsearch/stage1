@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "IndexResourceBenchmark",
+      "request": "launch",
+      "mainClass": "ulog.IndexResourceBenchmark",
+      "projectName": "stage1-benchmarks"
+    },
+    {
+      "type": "java",
       "name": "DatalakeBenchmark",
       "request": "launch",
       "mainClass": "ulog.DatalakeBenchmark",
