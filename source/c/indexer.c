@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <direct.h>
+#include <ctype.h>
 #include "indexer.h"
 
 #define TABLE_SIZE 20011
@@ -347,6 +348,100 @@ void save_index(void) {
     fclose(file);
 }
 
+void save_hierarchical_index(void) {
+
+    _mkdir("datamart_c");
+
+    _mkdir(
+        "datamart_c/inverted_index_hierarchical"
+    );
+
+
+    for (
+        int i = 0;
+        i < TABLE_SIZE;
+        i++
+    ) {
+
+        TermNode *current =
+            hash_table[i];
+
+
+        while (
+            current != NULL
+        ) {
+
+            char letter[2];
+
+            letter[0] =
+                (char)toupper(
+                    (unsigned char)current->term[0]
+                );
+
+            letter[1] =
+                '\0';
+
+
+            char folder[256];
+
+            sprintf(
+                folder,
+                "datamart_c/inverted_index_hierarchical/%s",
+                letter
+            );
+
+
+            _mkdir(folder);
+
+
+            char path[512];
+
+            sprintf(
+                path,
+                "%s/%s.txt",
+                folder,
+                current->term
+            );
+
+
+            FILE *file =
+                fopen(
+                    path,
+                    "w"
+                );
+
+
+            if (
+                file != NULL
+            ) {
+
+                for (
+                    int j = 0;
+                    j < current->book_count;
+                    j++
+                ) {
+
+                    fprintf(
+                        file,
+                        "%d\n",
+                        current->book_ids[j]
+                    );
+                }
+
+                fclose(file);
+            }
+
+
+            current =
+                current->next;
+        }
+    }
+
+
+    printf(
+        "Hierarchical index saved\n"
+    );
+}
 
 void search_term(const char *term) {
 
