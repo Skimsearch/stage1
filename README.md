@@ -126,6 +126,14 @@ Then open:
 src/main/java/ulog/RunInvertedIndexBenchmark.java
 and run it using Run Java from your IDE.
 
+## 🚀 Future Improvements
+
+*   **Distributed Data Processing:** Evolve the current single-node ingestion pipeline by integrating distributed frameworks (such as Apache Spark or Apache Kafka). This will enable parallel downloading, cleaning, and indexing across clusters to eliminate single-node I/O bottlenecks.
+*   **Data Compression & Columnar Formats:** Introduce transparent block-level compression (e.g., Zstandard or Snappy) to reduce disk space without significantly degrading read latency. Additionally, transition datamarts to columnar formats like Apache Parquet for optimized analytical querying.
+*   **Probabilistic Data Structures:** Implement in-memory Bloom filters to rapidly test for term existence prior to executing filesystem lookups, minimizing unnecessary and costly disk I/O operations.
+*   **Horizontal Scalability in NoSQL:** Configure sharding and replica sets in MongoDB to partition high-volume lexical collections across multiple instances. This ensures low-latency reads under heavy concurrent query loads.
+*   **Standardized Profiling Environments:** Containerize the benchmarking pipelines using Docker to uniformly track low-level CPU cache misses, instruction throughput, and memory pressure across Python, Java, and C, effectively eliminating host-dependent environmental variance.
+
 ## 📝 License
 
 This project is licensed under the MIT License
