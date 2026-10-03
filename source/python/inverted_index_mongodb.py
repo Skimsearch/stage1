@@ -24,6 +24,8 @@ def save_mongodb_index(inverted_index):
 
     collection.delete_many({})
 
+    collection.drop_indexes()
+
     documents = []
 
     for term, book_ids in inverted_index.items():

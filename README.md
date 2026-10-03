@@ -73,6 +73,59 @@ The project is heavily focused on benchmarking. Each language folder contains sp
 
 These scripts will typically evaluate the time taken to build the indexes and the latency/resource consumption when querying the datamart.
 
+## Quick test with sample data
+
+A small sample dataset is included in `sample_data/book/` so the pipeline can be tested without downloading the books again.
+
+The sample contains the same six books used in the benchmarks:
+- 11
+- 84
+- 98
+- 1342
+- 1661
+- 2701
+
+First, prepare the sample dataset:
+
+```bash
+./prepare_sample.sh
+```
+#### Python
+
+```bash
+python3 source/python/benchmark_index.py
+```
+
+#### C
+
+Compile
+```bash
+gcc -o source/c/inverted_index_benchmark \
+source/c/indexer.c \
+source/c/hierarchical_index.c \
+source/c/mongodb_index.c \
+source/c/inverted_index_benchmark.c \
+$(pkg-config --cflags --libs mongoc2)
+```
+Run
+```bash
+./source/c/inverted_index_benchmark
+```
+
+#### Java
+Go to the Java project directory:
+```bash
+cd source/java
+```
+Build the project
+```bash
+mvn clean package
+```
+
+Then open:
+src/main/java/ulog/RunInvertedIndexBenchmark.java
+and run it using Run Java from your IDE.
+
 ## 📝 License
 
 [Insert License Here - e.g., MIT, GPL-3.0]
