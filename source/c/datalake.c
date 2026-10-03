@@ -7,7 +7,7 @@
 
 
 void create_directory(const char *path) {
-    mkdir(path, 0777);
+    mkdir(path);
 }
 
 

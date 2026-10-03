@@ -129,7 +129,7 @@ int save_mongodb_index(void) {
         "term_1",
         &error
     );
-    
+
     bson_t *keys =
         BCON_NEW(
             "term",
