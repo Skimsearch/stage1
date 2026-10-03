@@ -193,6 +193,8 @@ int is_word_char(char c) {
         (c >= '0' && c <= '9')
         ||
         c == '_'
+        ||
+        (unsigned char)c >= 0x80   // any UTF-8 continuation/lead byte
     );
 }
 
