@@ -486,9 +486,7 @@ void benchmark_download_write_throughput() {
         &start
     );
 
-    int result =
-        system("./source/c/crawler > /dev/null");
-
+    int result = system("source\\C\\crawler.exe > NUL");
     clock_gettime(
         CLOCK_MONOTONIC,
         &end
