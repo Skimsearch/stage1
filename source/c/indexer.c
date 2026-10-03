@@ -1,7 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef _WIN32
 #include <direct.h>
+#define MAKE_DIR(path) _mkdir(path)
+#else
+#include <sys/stat.h>
+#define MAKE_DIR(path) mkdir(path, 0777)
+#endif
 #include <ctype.h>
 #include "indexer.h"
 
@@ -209,6 +215,67 @@ char to_lowercase(char c) {
     return c;
 }
 
+unsigned int read_utf8_codepoint(FILE *file, int first_byte) {
+
+    unsigned int codepoint;
+    int extra_bytes;
+
+    if (first_byte < 0x80) {
+        return (unsigned int)first_byte;
+    }
+
+    if ((first_byte & 0xE0) == 0xC0) {
+        codepoint = first_byte & 0x1F;
+        extra_bytes = 1;
+    }
+    else if ((first_byte & 0xF0) == 0xE0) {
+        codepoint = first_byte & 0x0F;
+        extra_bytes = 2;
+    }
+    else if ((first_byte & 0xF8) == 0xF0) {
+        codepoint = first_byte & 0x07;
+        extra_bytes = 3;
+    }
+    else {
+        return 0;
+    }
+
+    for (int i = 0; i < extra_bytes; i++) {
+
+        int next = fgetc(file);
+
+        if (next == EOF) {
+            break;
+        }
+
+        codepoint =
+            (codepoint << 6)
+            |
+            (next & 0x3F);
+    }
+
+    return codepoint;
+}
+
+
+int is_unicode_word_char(unsigned int cp) {
+
+    /*
+     * Letras latinas Unicode:
+     * á, é, ï, æ, œ, etc.
+     */
+    if (
+        (cp >= 0x00C0 && cp <= 0x00D6)
+        ||
+        (cp >= 0x00D8 && cp <= 0x00F6)
+        ||
+        (cp >= 0x00F8 && cp <= 0x024F)
+    ) {
+        return 1;
+    }
+
+    return 0;
+}
 
 void index_book(int book_id) {
 
@@ -244,6 +311,8 @@ void index_book(int book_id) {
 
     while ((c = fgetc(file)) != EOF) {
 
+    if (c < 128) {
+
         if (is_word_char((char)c)) {
 
             if (is_letter((char)c)) {
@@ -259,10 +328,6 @@ void index_book(int book_id) {
 
             else {
 
-                /*
-                 * A digit or underscore inside a word means
-                 * it does not match \b[a-zA-Z]+\b.
-                 */
                 valid_token = 0;
             }
         }
@@ -284,6 +349,49 @@ void index_book(int book_id) {
         }
     }
 
+    else {
+
+        unsigned int cp =
+            read_utf8_codepoint(
+                file,
+                c
+            );
+
+        if (is_unicode_word_char(cp)) {
+
+            /*
+             * Es una letra Unicode como œ, æ, é...
+             *
+             * Python la considera parte de la palabra,
+             * pero no pertenece a [a-zA-Z].
+             * Por tanto, la palabra entera deja de ser
+             * un token válido.
+             */
+            valid_token = 0;
+        }
+
+        else {
+
+            /*
+             * Es puntuación Unicode, por ejemplo ’.
+             * Python la considera separador.
+             */
+
+            if (token_length > 0 && valid_token) {
+
+                token[token_length] = '\0';
+
+                add_term(
+                    token,
+                    book_id
+                );
+            }
+
+            token_length = 0;
+            valid_token = 1;
+        }
+    }
+}
 
     if (token_length > 0 && valid_token) {
 
@@ -302,7 +410,7 @@ void index_book(int book_id) {
 
 void save_index(void) {
 
-    _mkdir("datamart_c");
+    MAKE_DIR("datamart_c");
 
     FILE *file = fopen(
         "datamart_c/inverted_index.json",
@@ -376,9 +484,9 @@ void save_index(void) {
 
 void save_hierarchical_index(void) {
 
-    _mkdir("datamart_c");
+    MAKE_DIR("datamart_c");
 
-    _mkdir(
+    MAKE_DIR(
         "datamart_c/inverted_index_hierarchical"
     );
 
@@ -417,7 +525,7 @@ void save_hierarchical_index(void) {
             );
 
 
-            _mkdir(folder);
+            MAKE_DIR(folder);
 
 
             char path[512];
