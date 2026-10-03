@@ -154,6 +154,32 @@ int get_unique_term_count(void) {
     return count;
 }
 
+long get_index_memory_usage(void) {
+
+    long total =
+        (long)sizeof(hash_table);
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+
+        TermNode *current =
+            hash_table[i];
+
+        while (current != NULL) {
+
+            total +=
+                (long)sizeof(TermNode);
+
+            total +=
+                (long)strlen(current->term) + 1;
+
+            current =
+                current->next;
+        }
+    }
+
+    return total;
+}
+
 void for_each_term(
     term_callback callback,
     void *context

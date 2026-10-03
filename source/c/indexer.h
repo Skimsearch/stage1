@@ -24,4 +24,9 @@ void for_each_term(
     void *context
 );
 
+void update_hierarchical_index_for_book(
+    int book_id
+);
+
+long get_index_memory_usage(void);
 #endif

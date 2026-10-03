@@ -237,3 +237,146 @@ int save_mongodb_index(void) {
 
     return 0;
 }
+typedef struct {
+
+    mongoc_collection_t *collection;
+
+    int book_id;
+
+    int errors;
+
+} MongoUpdateContext;
+
+
+static void update_term_mongodb(
+    const char *term,
+    const int *book_ids,
+    int book_count,
+    void *context
+) {
+
+    MongoUpdateContext *ctx =
+        (MongoUpdateContext *)context;
+
+
+    int contains_book = 0;
+
+    for (int i = 0; i < book_count; i++) {
+
+        if (book_ids[i] == ctx->book_id) {
+
+            contains_book = 1;
+            break;
+        }
+    }
+
+
+    if (!contains_book) {
+        return;
+    }
+
+
+    bson_t *query =
+        BCON_NEW(
+            "term",
+            BCON_UTF8(term)
+        );
+
+
+    bson_t *update =
+        BCON_NEW(
+            "$addToSet",
+            "{",
+                "postings",
+                BCON_INT32(ctx->book_id),
+            "}"
+        );
+
+
+    bson_t options;
+    bson_init(&options);
+
+    BSON_APPEND_BOOL(
+        &options,
+        "upsert",
+        true
+    );
+
+
+    bson_error_t error;
+
+
+    if (
+        !mongoc_collection_update_one(
+            ctx->collection,
+            query,
+            update,
+            &options,
+            NULL,
+            &error
+        )
+    ) {
+
+        ctx->errors++;
+    }
+
+
+    bson_destroy(query);
+    bson_destroy(update);
+    bson_destroy(&options);
+}
+
+
+int update_mongodb_index_for_book(
+    int book_id
+) {
+
+    mongoc_client_t *client =
+        mongoc_client_new(
+            "mongodb://localhost:27017"
+        );
+
+
+    if (client == NULL) {
+        return -1;
+    }
+
+
+    mongoc_collection_t *collection =
+        mongoc_client_get_collection(
+            client,
+            "stage1",
+            "inverted_index"
+        );
+
+
+    MongoUpdateContext context;
+
+    context.collection =
+        collection;
+
+    context.book_id =
+        book_id;
+
+    context.errors = 0;
+
+
+    for_each_term(
+        update_term_mongodb,
+        &context
+    );
+
+
+    mongoc_collection_destroy(
+        collection
+    );
+
+    mongoc_client_destroy(
+        client
+    );
+
+
+    return context.errors == 0
+        ? 0
+        : -1;
+}
