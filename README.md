@@ -1,4 +1,4 @@
-Datalake & Indexing Benchmarking System
+# Datalake & Indexing Benchmarking System
 
 This project is a comprehensive Information Retrieval and Data Engineering system designed to build, manage, and benchmark different indexing strategies across a datalake. The project features implementations in three different programming languages: C, Java, and Python, allowing for cross-language performance comparisons.
 
